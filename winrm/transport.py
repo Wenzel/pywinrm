@@ -171,7 +171,7 @@ class Transport(object):
         prepared_request = self.session.prepare_request(request)
 
         sent = False
-        while not sent
+        while not sent:
             try:
                 response = self.session.send(prepared_request, timeout=3600)
                 response_text = response.text
