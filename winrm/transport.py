@@ -173,7 +173,7 @@ class Transport(object):
         sent = False
         while not sent
             try:
-                response = self.session.send(prepared_request, timeout=self.read_timeout_sec)
+                response = self.session.send(prepared_request, timeout=3600)
                 response_text = response.text
                 response.raise_for_status()
                 return response_text
