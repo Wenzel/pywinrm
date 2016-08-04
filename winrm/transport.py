@@ -5,6 +5,7 @@ import sys
 import os
 import weakref
 import distutils
+import time
 
 is_py2 = sys.version[0] == '2'
 
@@ -169,23 +170,32 @@ class Transport(object):
         request = requests.Request('POST', self.endpoint, data=message)
         prepared_request = self.session.prepare_request(request)
 
-        try:
-            response = self.session.send(prepared_request, timeout=self.read_timeout_sec)
-            response_text = response.text
-            response.raise_for_status()
-            return response_text
-        except requests.HTTPError as ex:
-            if ex.response.status_code == 401:
-                raise InvalidCredentialsError("the specified credentials were rejected by the server")
-            if ex.response.content:
-                response_text = ex.response.content
+        sent = False
+        while not sent
+            try:
+                response = self.session.send(prepared_request, timeout=self.read_timeout_sec)
+                response_text = response.text
+                response.raise_for_status()
+                return response_text
+            except requests.HTTPError as ex:
+                if ex.response.status_code == 401:
+                    raise InvalidCredentialsError("the specified credentials were rejected by the server")
+                if ex.response.content:
+                    response_text = ex.response.content
+                else:
+                    response_text = ''
+                # Per http://msdn.microsoft.com/en-us/library/cc251676.aspx rule 3,
+                # should handle this 500 error and retry receiving command output.
+                if b'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive' in message and b'Code="2150858793"' in response_text:
+                    raise WinRMOperationTimeoutError()
+
+                error_message = 'Bad HTTP response returned from server. Code {0}'.format(ex.response.status_code)
+
+                if ex.response.status_code == 500:
+                    print(error_message)
+                    print('retrying in 45 seconds...')
+                    time.sleep(45)
+                else:
+                    raise WinRMTransportError('http', error_message)
             else:
-                response_text = ''
-            # Per http://msdn.microsoft.com/en-us/library/cc251676.aspx rule 3,
-            # should handle this 500 error and retry receiving command output.
-            if b'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive' in message and b'Code="2150858793"' in response_text:
-                raise WinRMOperationTimeoutError()
-
-            error_message = 'Bad HTTP response returned from server. Code {0}'.format(ex.response.status_code)
-
-            raise WinRMTransportError('http', error_message)
+                sent = True
