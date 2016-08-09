@@ -205,7 +205,7 @@ class Protocol(object):
     def send_message(self, message):
         # TODO add message_id vs relates_to checking
         # TODO port error handling code
-        time.sleep(0.1)
+        time.sleep(0.3)
         return self.transport.send_message(message)
 
     def close_shell(self, shell_id):
