@@ -5,7 +5,6 @@ import sys
 import os
 import weakref
 import distutils
-import time
 
 is_py2 = sys.version[0] == '2'
 
@@ -174,7 +173,6 @@ class Transport(object):
             response = self.session.send(prepared_request, timeout=3600)
             response_text = response.text
             response.raise_for_status()
-            time.sleep(0.1)
             return response_text
         except requests.HTTPError as ex:
             if ex.response.status_code == 401:

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import base64
 import uuid
+import time
 
 import xml.etree.ElementTree as ET
 import xmltodict
@@ -204,6 +205,7 @@ class Protocol(object):
     def send_message(self, message):
         # TODO add message_id vs relates_to checking
         # TODO port error handling code
+        time.sleep(0.1)
         return self.transport.send_message(message)
 
     def close_shell(self, shell_id):
